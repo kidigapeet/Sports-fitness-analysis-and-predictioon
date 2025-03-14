@@ -41,11 +41,11 @@ This project aims to predict the likelihood of injuries based on various feature
 ## Installation
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/injury-prediction.git
+   git clone https://github.com/kidigapeet/Sports-fitness-analysis-and-predictioon.git
    ```
 2. Navigate to the project folder:
    ```sh
-   cd injury-prediction
+   cd Sports-fitness-analysis-and-predictioon
    ```
 3. Install required R packages:
    ```r
