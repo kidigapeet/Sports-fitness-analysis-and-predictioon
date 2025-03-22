@@ -1,0 +1,220 @@
+---
+title: "Sports Injury Project we presented it "
+author: "Whitney Gituara"
+date: "2025-03-16"
+output: html_document
+---
+..........................
+Loading the Data set
+..........................
+```{r}
+install.packages("GGally")  
+library(GGally)
+library(tidyverse)
+
+injury<- read.csv("C:/Users/Admin/OneDrive/Documents/USIU/Statistical Computing/Assignments/Project/injury_data.csv")
+head(injury)
+
+`````````
+.........................
+Renaming the columns
+.........................
+```{r}
+colnames(injury)
+```
+
+```{r}
+injury<-injury %>%
+rename(Age = Player_Age,Weight=Player_Weight,Height=Player_Height,InjuryLikelihood=Likelihood_of_Injury)
+injury
+```
+
+
+```{r}
+str(injury) #helps us see the structure of the data
+#Converting the categorical variables to factors
+#previous_injuries and likelihood_of_injury are categorical and converting integer to numeric
+injury <- injury %>%
+  mutate(
+    Previous_Injuries = as.factor(Previous_Injuries),
+    InjuryLikelihood = as.factor(InjuryLikelihood),
+    Age = as.numeric(Age),
+    Recovery_Time = as.numeric(Recovery_Time)
+  )
+str(injury)
+```
+
+...................................
+Data pre-processing and cleaning
+...................................
+```{r}
+# Normalizing and scaling the data
+#Given that some variables have different scales, the model might struggle
+# Normalize numerical features
+injury <- injury %>%
+  mutate(
+    Weight = (Weight - min(Weight)) / (max(Weight) - min(Weight)),
+    Height = (Height - min(Height)) / (max(Height) - min(Height))
+  )
+
+
+injury_data <- injury_data %>%
+  mutate(
+    Previous_Injuries = as.factor(Previous_Injuries),
+    Likelihood_of_Injury = as.factor(Likelihood_of_Injury),
+    Player_Age = as.numeric(Player_Age),
+    Recovery_Time = as.numeric(Recovery_Time)
+  )
+#checking for missing values
+colSums(is.na(injury)) #quick way to check for the number of missing values per column because it counts the number of missing values.
+is.na(injury) #longer process of cheking if there are missing values in each column
+str(injury)
+`````````
+
+........................................
+Exploratory Data Analysis (EDA)
+........................................
+-This is the process of analyzing and visualizing data to uncover patterns, trends and relationships
+-It helps us understand how:
+  features relate to injuries
+  identify patterns that the model can learn from
+  helps detect errors in the data
+  
+i) Visualizing data distributions
+   a)Histograms
+```{r}
+#age distribution
+ggplot(injury,aes(x=Age)) +
+  geom_histogram(binwidth = 2,fill= "red",color="black") +
+  theme_minimal() +
+  labs(title = "Distribution of Player's Age ", x= "Age", y= "Count")
+
+#weight distribution
+ggplot(injury,aes(x=Weight)) +
+  geom_histogram(binwidth = 2,fill= "blue",color="black") +
+  theme_minimal() +
+  labs(title = "Distribution of Player Weight ", x= "Weight (mins)", y= "Count")
+
+#distribution of previous injuries
+ggplot(injury,aes(x=Previous_Injuries)) +
+  geom_bar(binwidth = 2,fill= "yellow",color="black") +
+  theme_minimal() +
+  labs(title = "Distribution of Previous Injuries ", x= "Injuries", y= "Count")
+#The bar plots show that more players were injured previously.
+
+#training intensity distribution
+ggplot(injury,aes(x=Training_Intensity)) +
+  geom_density(binwidth = 2, fill= "brown", color="black") +
+  theme_minimal() +
+  labs(title="Training intensity distribution", x="Training intensity", y= "Count")
+
+#Recovery time distribution
+ggplot(injury,aes(x=Recovery_Time)) +
+  geom_bar(binwidth = 2, fill= "orange", color="black") +
+  theme_minimal() +
+  labs(title="Recovery Time distribution", x="Recovery Time (mins)", y= "Count")
+
+ggplot(injury_data, aes(x = Recovery_Time)) +
+  geom_histogram(binwidth = 5, fill = "orange", color = "black", alpha = 0.7) +
+  theme_bw() +
+  labs(title = "Recovery Time Distribution", x = "Recovery Time (Days)", y = "Count") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  )
+#likelihood of injury distribution
+ggplot(injury,aes(x=InjuryLikelihood)) +
+  geom_bar(binwidth = 2, fill= "brown", color="black") +
+  theme_minimal() +
+  labs(title="Likelihood of injury distribution", x="Likelihood of injury", y= "Count")
+
+ggplot(injury_data, aes(x = Recovery_Time)) +
+  geom_histogram(binwidth = 5, fill = "orange", color = "black", alpha = 0.7) +
+  theme_bw() +
+  labs(title = "Recovery Time Distribution", x = "Recovery Time (Days)", y = "Count") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  )
+`````
+Most of the players are aged between 22 and 20
+Most of them weigh 80kgs
+The bar plots show that more players were injured previously.
+
+
+Correlation checker
+Correlation measures how strongly two variables are related.
+It will show how features relate to each other.
+-It ranges from -1 to 1:
+   +1 → Strong positive relationship (as one increases, the other increases).
+   -1 → Strong negative relationship (as one increases, the other decreases).
+    0 → No relationship.
+
+It is important because:
+-It helps us identify which features matter for predicting injuries.
+-It helps remove irrelevant features (those with low correlation to injury).
+-It helps avoid multicollinearity, which can confuse the model
+```{r}
+cor(injury_data)
+injury %>% select_if(is.numeric) %>% cor()
+```
+Weight affects the recovery time by 0.06
+height affects training intensity by 0.048
+age affects previous injuries by 0.045
+Basing it off the likelihood of an injury:
+-Previous injuries and training intensity are potential factors.
+-Players with more past injuries are slightly more likely to get injured again
+
+Higher training intensity slightly increases injury risk
+Those with higher past injuries are more likely to get injuries
+
+
+
+........................
+Feature Selection
+........................
+This refers to the selection of the most important features for the model, which helps us get rid of the data we do not need,improves the model's accuracy therefore speeding the training process due to the use of fewer features
+```{r}
+important<- injury %>%
+  select(Previous_Injuries, Training_Intensity, Recovery_Time,InjuryLikelihood)
+important
+```
+
+..........................
+Data Preprocessing
+..........................
+```{r}
+
+```
+
+
+.........................................................
+Splitting the Data and Building a Machine Learning Model
+(Train and Evaluate Machine Learning Models in R)
+.........................................................
+We divide the dataset into:
+  -Training set (80%) – used to teach the model.
+  -Testing set (20%) – used to evaluate how well the model performs on new data.
+```{r}
+install.packages("caret")
+library(caret)
+
+```
+The caret (Classification And REgression Training) package is super useful for:
+
+Data preprocessing
+Model training and evaluation
+Feature selection
+Resampling (cross-validation, bootstrapping)
+
+
+
+
+
+
+
+
+
+
