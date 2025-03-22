@@ -53,11 +53,11 @@ roc_curve <- roc(test_data$Likelihood_of_Injury, as.numeric(predictions))
 plot(roc_curve, main = "ROC Curve")
 auc(roc_curve)  # Area under the curve
 
-# Step 8: Feature importance (if using a tree-based model)
+# Step 8: Feature importance
 library(caret)
 varImp(model)  # View feature importance
 
-# Step 10: Save the model (optional)
+# Step 10: Save the model 
 saveRDS(model, "injury_prediction_model.rds")
 
 
